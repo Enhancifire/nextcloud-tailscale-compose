@@ -1,0 +1,39 @@
+---
+services:
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=Asia/Kolkata
+    volumes:
+      - /mnt/SSD/Apps/Nextcloud/config:/config
+      - /mnt/SSD/TrueNAS/Nextcloud/data:/data
+    # ports:
+      # - 443:443
+    restart: unless-stopped
+    depends_on:
+      - tailscale-nextcloud
+    network_mode: service:tailscale-nextcloud
+
+  tailscale-nextcloud:
+    image: tailscale/tailscale:latest
+    hostname: tailscale-nextcloud
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=Asia/Kolkata
+      - TS_AUTHKEY=${TS_AUTH_KEY}
+      # - TS_EXTRA_ARGS=--advertise-tags=tag:container
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - /mnt/SSD/Apps/Nextcloud/tailscale/state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+    restart: unless-stopped
+    
+
